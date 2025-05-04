@@ -59,6 +59,59 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 				const lastUserMsgIndex = userMsgIndices[userMsgIndices.length - 1] ?? -1
 				const secondLastMsgUserIndex = userMsgIndices[userMsgIndices.length - 2] ?? -1
 
+				const requestOptions: any = {}
+
+				// Add headers if needed
+				const headers: Record<string, string> = {}
+				const betas = []
+
+				// Check for the thinking-128k variant first
+				if (virtualId === "claude-3-7-sonnet-20250219:thinking") {
+					betas.push("output-128k-2025-02-19")
+				}
+
+				// Then check for models that support prompt caching
+				switch (modelId) {
+					case "claude-3-7-sonnet-20250219":
+					case "claude-3-5-sonnet-20241022":
+					case "claude-3-5-haiku-20241022":
+					case "claude-3-opus-20240229":
+					case "claude-3-haiku-20240307":
+						betas.push("prompt-caching-2024-07-31")
+						break
+				}
+
+				if (betas.length > 0) {
+					headers["anthropic-beta"] = betas.join(",")
+				}
+
+				// Add extra headers if provided
+				if (this.options.anthropicExtraHeaders) {
+					this.options.anthropicExtraHeaders.split("&").forEach((header) => {
+						const [key, value] = header.split("=")
+						if (key) {
+							headers[key] = value || ""
+						}
+					})
+				}
+
+				if (Object.keys(headers).length > 0) {
+					requestOptions.headers = headers
+				}
+
+				// Add query parameters if extra URL options are provided
+				if (this.options.anthropicExtraUrlOptions) {
+					// Parse the string into an object
+					const queryParams: Record<string, string> = {}
+					this.options.anthropicExtraUrlOptions.split("&").forEach((param) => {
+						const [key, value] = param.split("=")
+						if (key) {
+							queryParams[key] = value || ""
+						}
+					})
+					requestOptions.query = queryParams
+				}
+
 				stream = await this.client.messages.create(
 					{
 						model: modelId,
@@ -85,43 +138,52 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 						}),
 						stream: true,
 					},
-					(() => {
-						// prompt caching: https://x.com/alexalbert__/status/1823751995901272068
-						// https://github.com/anthropics/anthropic-sdk-typescript?tab=readme-ov-file#default-headers
-						// https://github.com/anthropics/anthropic-sdk-typescript/commit/c920b77fc67bd839bfeb6716ceab9d7c9bbe7393
-
-						const betas = []
-
-						// Check for the thinking-128k variant first
-						if (virtualId === "claude-3-7-sonnet-20250219:thinking") {
-							betas.push("output-128k-2025-02-19")
-						}
-
-						// Then check for models that support prompt caching
-						switch (modelId) {
-							case "claude-3-7-sonnet-20250219":
-							case "claude-3-5-sonnet-20241022":
-							case "claude-3-5-haiku-20241022":
-							case "claude-3-opus-20240229":
-							case "claude-3-haiku-20240307":
-								betas.push("prompt-caching-2024-07-31")
-								return { headers: { "anthropic-beta": betas.join(",") } }
-							default:
-								return undefined
-						}
-					})(),
+					Object.keys(requestOptions).length > 0 ? requestOptions : undefined,
 				)
 				break
 			}
 			default: {
-				stream = (await this.client.messages.create({
-					model: modelId,
-					max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
-					temperature,
-					system: [{ text: systemPrompt, type: "text" }],
-					messages,
-					stream: true,
-				})) as any
+				const requestOptions: any = {}
+				const headers: Record<string, string> = {}
+
+				// Add extra headers if provided
+				if (this.options.anthropicExtraHeaders) {
+					this.options.anthropicExtraHeaders.split("&").forEach((header) => {
+						const [key, value] = header.split("=")
+						if (key) {
+							headers[key] = value || ""
+						}
+					})
+				}
+
+				if (Object.keys(headers).length > 0) {
+					requestOptions.headers = headers
+				}
+
+				// Add query parameters if extra URL options are provided
+				if (this.options.anthropicExtraUrlOptions) {
+					// Parse the string into an object
+					const queryParams: Record<string, string> = {}
+					this.options.anthropicExtraUrlOptions.split("&").forEach((param) => {
+						const [key, value] = param.split("=")
+						if (key) {
+							queryParams[key] = value || ""
+						}
+					})
+					requestOptions.query = queryParams
+				}
+
+				stream = (await this.client.messages.create(
+					{
+						model: modelId,
+						max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
+						temperature,
+						system: [{ text: systemPrompt, type: "text" }],
+						messages,
+						stream: true,
+					},
+					Object.keys(requestOptions).length > 0 ? requestOptions : undefined,
+				)) as any
 				break
 			}
 		}
@@ -219,14 +281,47 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 	async completePrompt(prompt: string) {
 		let { id: model, temperature } = this.getModel()
 
-		const message = await this.client.messages.create({
-			model,
-			max_tokens: ANTHROPIC_DEFAULT_MAX_TOKENS,
-			thinking: undefined,
-			temperature,
-			messages: [{ role: "user", content: prompt }],
-			stream: false,
-		})
+		const requestOptions: any = {}
+		const headers: Record<string, string> = {}
+
+		// Add extra headers if provided
+		if (this.options.anthropicExtraHeaders) {
+			this.options.anthropicExtraHeaders.split("&").forEach((header) => {
+				const [key, value] = header.split("=")
+				if (key) {
+					headers[key] = value || ""
+				}
+			})
+		}
+
+		if (Object.keys(headers).length > 0) {
+			requestOptions.headers = headers
+		}
+
+		// Add query parameters if extra URL options are provided
+		if (this.options.anthropicExtraUrlOptions) {
+			// Parse the string into an object
+			const queryParams: Record<string, string> = {}
+			this.options.anthropicExtraUrlOptions.split("&").forEach((param) => {
+				const [key, value] = param.split("=")
+				if (key) {
+					queryParams[key] = value || ""
+				}
+			})
+			requestOptions.query = queryParams
+		}
+
+		const message = await this.client.messages.create(
+			{
+				model,
+				max_tokens: ANTHROPIC_DEFAULT_MAX_TOKENS,
+				thinking: undefined,
+				temperature,
+				messages: [{ role: "user", content: prompt }],
+				stream: false,
+			},
+			Object.keys(requestOptions).length > 0 ? requestOptions : undefined,
+		)
 
 		const content = message.content.find(({ type }) => type === "text")
 		return content?.type === "text" ? content.text : ""
@@ -243,10 +338,43 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			// Use the current model
 			const { id: model } = this.getModel()
 
-			const response = await this.client.messages.countTokens({
-				model,
-				messages: [{ role: "user", content: content }],
-			})
+			const requestOptions: any = {}
+			const headers: Record<string, string> = {}
+
+			// Add extra headers if provided
+			if (this.options.anthropicExtraHeaders) {
+				this.options.anthropicExtraHeaders.split("&").forEach((header) => {
+					const [key, value] = header.split("=")
+					if (key) {
+						headers[key] = value || ""
+					}
+				})
+			}
+
+			if (Object.keys(headers).length > 0) {
+				requestOptions.headers = headers
+			}
+
+			// Add query parameters if extra URL options are provided
+			if (this.options.anthropicExtraUrlOptions) {
+				// Parse the string into an object
+				const queryParams: Record<string, string> = {}
+				this.options.anthropicExtraUrlOptions.split("&").forEach((param) => {
+					const [key, value] = param.split("=")
+					if (key) {
+						queryParams[key] = value || ""
+					}
+				})
+				requestOptions.query = queryParams
+			}
+
+			const response = await this.client.messages.countTokens(
+				{
+					model,
+					messages: [{ role: "user", content: content }],
+				},
+				Object.keys(requestOptions).length > 0 ? requestOptions : undefined,
+			)
 
 			return response.input_tokens
 		} catch (error) {
