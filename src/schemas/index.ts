@@ -348,6 +348,8 @@ export const providerSettingsSchema = z.object({
 	apiKey: z.string().optional(),
 	anthropicBaseUrl: z.string().optional(),
 	anthropicUseAuthToken: z.boolean().optional(),
+	anthropicExtraUrlOptions: z.string().optional(),
+	anthropicExtraHeaders: z.string().optional(),
 	// Glama
 	glamaModelId: z.string().optional(),
 	glamaApiKey: z.string().optional(),
@@ -449,6 +451,8 @@ const providerSettingsRecord: ProviderSettingsRecord = {
 	apiKey: undefined,
 	anthropicBaseUrl: undefined,
 	anthropicUseAuthToken: undefined,
+	anthropicExtraUrlOptions: undefined,
+	anthropicExtraHeaders: undefined,
 	// Glama
 	glamaModelId: undefined,
 	glamaApiKey: undefined,

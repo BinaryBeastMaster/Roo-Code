@@ -88,8 +88,9 @@ const ApiOptions = ({
 	// Effect to synchronize internal customHeaders state with prop changes
 	useEffect(() => {
 		const propHeaders = apiConfiguration?.openAiHeaders || {}
-		if (JSON.stringify(customHeaders) !== JSON.stringify(Object.entries(propHeaders))) setCustomHeaders(Object.entries(propHeaders))
-	}, [apiConfiguration?.openAiHeaders])
+		if (JSON.stringify(customHeaders) !== JSON.stringify(Object.entries(propHeaders)))
+			setCustomHeaders(Object.entries(propHeaders))
+	}, [apiConfiguration?.openAiHeaders, customHeaders])
 
 	const [anthropicBaseUrlSelected, setAnthropicBaseUrlSelected] = useState(!!apiConfiguration?.anthropicBaseUrl)
 	const [openAiNativeBaseUrlSelected, setOpenAiNativeBaseUrlSelected] = useState(
@@ -517,6 +518,34 @@ const ApiOptions = ({
 									className="w-full mt-1">
 									{t("settings:providers.anthropicUseAuthToken")}
 								</Checkbox>
+
+								<VSCodeTextField
+									value={apiConfiguration?.anthropicExtraUrlOptions || ""}
+									type="text"
+									onInput={handleInputChange("anthropicExtraUrlOptions")}
+									placeholder="beta=true"
+									className="w-full mt-1">
+									<label className="block font-medium mb-1">
+										{t("settings:providers.anthropicExtraUrlOptions")}
+									</label>
+								</VSCodeTextField>
+								<div className="text-sm text-vscode-descriptionForeground">
+									{t("settings:providers.anthropicExtraUrlOptionsDescription")}
+								</div>
+
+								<VSCodeTextField
+									value={apiConfiguration?.anthropicExtraHeaders || ""}
+									type="text"
+									onInput={handleInputChange("anthropicExtraHeaders")}
+									placeholder="anthropic-beta=oauth-2025-04-20"
+									className="w-full mt-3">
+									<label className="block font-medium mb-1">
+										{t("settings:providers.anthropicExtraHeaders")}
+									</label>
+								</VSCodeTextField>
+								<div className="text-sm text-vscode-descriptionForeground">
+									{t("settings:providers.anthropicExtraHeadersDescription")}
+								</div>
 							</>
 						)}
 					</div>

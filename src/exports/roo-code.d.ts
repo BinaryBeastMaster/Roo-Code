@@ -27,6 +27,8 @@ type ProviderSettings = {
 	apiKey?: string | undefined
 	anthropicBaseUrl?: string | undefined
 	anthropicUseAuthToken?: boolean | undefined
+	anthropicExtraUrlOptions?: string | undefined
+	anthropicExtraHeaders?: string | undefined
 	glamaModelId?: string | undefined
 	glamaApiKey?: string | undefined
 	openRouterApiKey?: string | undefined
