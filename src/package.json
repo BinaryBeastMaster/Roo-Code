@@ -392,6 +392,60 @@
 					"default": true,
 					"description": "%settings.useAgentRules.description%"
 				}
+				,
+				"roo-cline.voice.enabled": {
+					"type": "boolean",
+					"default": false,
+					"description": "Enable voice input features (experimental)."
+				},
+				"roo-cline.voice.sttProvider": {
+					"type": "string",
+					"enum": ["openai-realtime", "local"],
+					"default": "openai-realtime",
+					"description": "Speech-to-text provider to use for voice input."
+				},
+				"roo-cline.voice.autoSendOnSilence": {
+					"type": "boolean",
+					"default": false,
+					"description": "Automatically send the message when silence is detected."
+				},
+				"roo-cline.voice.silenceDelayMs": {
+					"type": "number",
+					"default": 3000,
+					"minimum": 500,
+					"maximum": 30000,
+					"description": "Silence detection delay in milliseconds before auto-send."
+				},
+				"roo-cline.voice.pushToTalk": {
+					"type": "boolean",
+					"default": true,
+					"description": "Hold the mic hotkey to record; release to stop."
+				},
+				"roo-cline.voice.sendOnRelease": {
+					"type": "boolean",
+					"default": false,
+					"description": "Send immediately when the mic hotkey is released."
+				},
+				"roo-cline.voice.language": {
+					"type": "string",
+					"default": "en-US",
+					"description": "Language for transcription (BCP-47 code), or 'auto' to detect."
+				},
+				"roo-cline.voice.inputNoiseSuppression": {
+					"type": "boolean",
+					"default": true,
+					"description": "Enable browser noise suppression for the microphone."
+				},
+				"roo-cline.voice.inputAutoGainControl": {
+					"type": "boolean",
+					"default": true,
+					"description": "Enable browser auto gain control for the microphone."
+				},
+				"roo-cline.voice.localServerUrl": {
+					"type": "string",
+					"default": "",
+					"description": "Local STT server URL (used when sttProvider is 'local')."
+				}
 			}
 		}
 	},

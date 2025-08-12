@@ -1255,6 +1255,26 @@ export const webviewMessageHandler = async (
 		case "maxOpenTabsContext":
 			const tabCount = Math.min(Math.max(0, message.value ?? 20), 500)
 			await updateGlobalState("maxOpenTabsContext", tabCount)
+		case "sttStart": {
+			const enabled = vscode.workspace.getConfiguration("roo-cline.voice").get<boolean>("enabled", false)
+			if (!enabled) {
+				provider.log("Voice STT received but roo-cline.voice.enabled is false; ignoring.")
+				break
+			}
+			await provider.postMessageToWebview({ type: "voiceState", voice: { isRecording: true, isStreaming: false } })
+			break
+		}
+		case "sttChunk": {
+			const enabled = vscode.workspace.getConfiguration("roo-cline.voice").get<boolean>("enabled", false)
+			if (!enabled) break
+			break
+		}
+		case "sttStop": {
+			const enabled = vscode.workspace.getConfiguration("roo-cline.voice").get<boolean>("enabled", false)
+			if (!enabled) break
+			await provider.postMessageToWebview({ type: "voiceState", voice: { isRecording: false } })
+			break
+		}
 			await provider.postStateToWebview()
 			break
 		case "maxWorkspaceFiles":

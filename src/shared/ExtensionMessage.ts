@@ -118,6 +118,7 @@ export interface ExtensionMessage {
 		| "codeIndexSettingsSaved"
 		| "codeIndexSecretStatus"
 		| "showDeleteMessageDialog"
+		| "voiceState"
 		| "showEditMessageDialog"
 		| "commands"
 		| "insertTextIntoTextarea"
@@ -195,6 +196,12 @@ export interface ExtensionMessage {
 	messageTs?: number
 	context?: string
 	commands?: Command[]
+	voice?: {
+		isRecording?: boolean
+		isStreaming?: boolean
+		silenceCountdownMs?: number
+		error?: string
+	}
 }
 
 export type ExtensionState = Pick<
