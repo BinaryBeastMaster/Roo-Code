@@ -1017,8 +1017,25 @@ export class ClineProvider
 	 * @param webview A reference to the extension webview
 	 */
 	private setWebviewMessageListener(webview: vscode.Webview) {
-		const onReceiveMessage = async (message: WebviewMessage) =>
-			webviewMessageHandler(this, message, this.marketplaceManager)
+		const onReceiveMessage = async (message: WebviewMessage) => {
+			if (message.type === "sttStart") {
+				await this.sttStart(webview, {
+					sampleRate: message.sttSampleRate!,
+					encoding: message.sttEncoding!,
+					language: message.sttLanguage,
+				})
+				return
+			}
+			if (message.type === "sttChunk") {
+				this.sttChunk(webview, (message.sttData as any)!)
+				return
+			}
+			if (message.type === "sttStop") {
+				this.sttStop(webview)
+				return
+			}
+			return webviewMessageHandler(this, message, this.marketplaceManager)
+		}
 
 		const messageDisposable = webview.onDidReceiveMessage(onReceiveMessage)
 		this.webviewDisposables.push(messageDisposable)
@@ -1565,6 +1582,51 @@ export class ClineProvider
 	 */
 	private mergeAllowedCommands(globalStateCommands?: string[]): string[] {
 		return this.mergeCommandLists("allowedCommands", "allowed", globalStateCommands)
+	}
+
+	public sttSessions: Map<vscode.Webview, import("../../services/stt/session").SttSession> = new Map()
+	public async sttStart(
+		webview: vscode.Webview,
+		opts: { sampleRate: number; encoding: "pcm16"; language?: string },
+	): Promise<void> {
+		const { SttSession } = require("../../services/stt/session")
+		const state = await this.getStateToPostToWebview()
+		const settings = state.apiConfiguration ?? {}
+		const apiKey = (settings as any).voiceApiKey
+		let session = this.sttSessions.get(webview)
+		if (!session) {
+			session = new SttSession({
+				webview,
+				apiKey,
+				autoSendOnSilence: !!(settings as any).autoSendOnSilence,
+				silenceDelayMs: (settings as any).silenceDelayMs ?? 3000,
+				language: opts.language,
+			})
+			this.sttSessions.set(webview, session as any)
+			const sess = session!
+			const autoSend = !!(settings as any).autoSendOnSilence
+			sess.onTranscript((text: string, final: boolean) => {
+				this.postMessageToWebview({ type: "insertTextIntoTextarea", text })
+				if (final && autoSend) {
+					this.postMessageToWebview({ type: "acceptInput" })
+				}
+			})
+			sess.onVoiceState((state: any) => {
+				this.postMessageToWebview({ type: "voiceState", voice: state })
+			})
+		}
+		await (session as any).start(opts)
+	}
+	public sttChunk(webview: vscode.Webview, chunk: Uint8Array | number[] | ArrayBuffer): void {
+		const s = this.sttSessions.get(webview)
+		if (s) s.sendPcm(chunk as any)
+	}
+	public sttStop(webview: vscode.Webview): void {
+		const s = this.sttSessions.get(webview)
+		if (s) {
+			s.stop()
+			this.sttSessions.delete(webview)
+		}
 	}
 
 	/**

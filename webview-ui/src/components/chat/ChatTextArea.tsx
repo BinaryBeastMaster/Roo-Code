@@ -181,6 +181,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						type: ContextMenuOptionType.Git,
 						value: commit.hash,
 						label: commit.subject,
+
 						description: `${commit.shortHash} by ${commit.author} on ${commit.date}`,
 						icon: "$(git-commit)",
 					}))
@@ -245,22 +246,59 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			}
 		}, [inputValue, setInputValue, t])
 		const [isRecording, setIsRecording] = useState(false)
+		const audioRefs = useRef<{
+			stream?: MediaStream
+			ctx?: AudioContext
+			source?: MediaStreamAudioSourceNode
+			processor?: ScriptProcessorNode
+		} | null>(null)
+		const startMic = useCallback(async () => {
+			try {
+				const stream = await navigator.mediaDevices.getUserMedia({
+					audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+				})
+				const ctx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 })
+				const source = ctx.createMediaStreamSource(stream)
+				const processor = ctx.createScriptProcessor(4096, 1, 1)
+				processor.onaudioprocess = (e) => {
+					const input = e.inputBuffer.getChannelData(0)
+					const pcm16 = new Int16Array(input.length)
+					for (let i = 0; i < input.length; i++) {
+						const s = Math.max(-1, Math.min(1, input[i]))
+						pcm16[i] = s < 0 ? s * 0x8000 : s * 0x7fff
+					}
+					const u8 = new Uint8Array(pcm16.buffer)
+					const message: WebviewMessage = { type: "sttChunk", sttData: u8 }
+					vscode.postMessage(message)
+				}
+				source.connect(processor)
+				processor.connect(ctx.destination)
+				audioRefs.current = { stream, ctx, source, processor }
+				const message: WebviewMessage = { type: "sttStart", sttSampleRate: 16000, sttEncoding: "pcm16" }
+				vscode.postMessage(message)
+				setIsRecording(true)
+			} catch (_e) {
+				setIsRecording(false)
+			}
+		}, [])
+		const stopMic = useCallback(() => {
+			const refs = audioRefs.current
+			if (refs?.processor) refs.processor.disconnect()
+			if (refs?.source) refs.source.disconnect()
+			if (refs?.ctx && refs.ctx.state !== "closed") refs.ctx.close()
+			if (refs?.stream) refs.stream.getTracks().forEach((t) => t.stop())
+			audioRefs.current = null
+			setIsRecording(false)
+			const stopMsg: WebviewMessage = { type: "sttStop" }
+			vscode.postMessage(stopMsg)
+		}, [])
 		const handleToggleMic = useCallback(() => {
 			if (!isRecording) {
-				setIsRecording(true)
-				const message: WebviewMessage = {
-					type: "sttStart",
-					sttSampleRate: 16000,
-					sttEncoding: "pcm16",
-				}
-				vscode.postMessage(message)
+				startMic()
 			} else {
-				setIsRecording(false)
-				const stopMsg: WebviewMessage = { type: "sttStop" }
-				vscode.postMessage(stopMsg)
+				stopMic()
 			}
-		}, [isRecording])
-
+		}, [isRecording, startMic, stopMic])
 
 		const allModes = useMemo(() => getAllModes(customModes), [customModes])
 
