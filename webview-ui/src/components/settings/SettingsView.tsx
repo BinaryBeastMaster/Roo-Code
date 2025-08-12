@@ -726,14 +726,12 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								setExperimentEnabled={setExperimentEnabled}
 								experiments={experiments}
 							/>
-							<Section>
-								<VoiceSettings
-									apiConfiguration={apiConfiguration as ProviderSettings}
-									setApiConfigurationField={setApiConfigurationField}
-									voiceEnabled={!!voiceEnabled}
-									setCachedStateField={setCachedStateField}
-								/>
-							</Section>
+							<VoiceSettings
+								apiConfiguration={apiConfiguration as ProviderSettings}
+								setApiConfigurationField={setApiConfigurationField}
+								voiceEnabled={!!voiceEnabled}
+								setCachedStateField={setCachedStateField}
+							/>
 						</>
 					)}
 
