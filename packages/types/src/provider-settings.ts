@@ -282,6 +282,10 @@ const ioIntelligenceSchema = apiModelIdProviderModelSchema.extend({
 	ioIntelligenceApiKey: z.string().optional(),
 })
 
+const voiceSchema = z.object({
+	voiceApiKey: z.string().optional(),
+})
+
 const defaultSchema = z.object({
 	apiProvider: z.undefined(),
 })
@@ -354,6 +358,7 @@ export const providerSettingsSchema = z.object({
 	...zaiSchema.shape,
 	...fireworksSchema.shape,
 	...ioIntelligenceSchema.shape,
+	...voiceSchema.shape,
 	...codebaseIndexProviderSchema.shape,
 })
 

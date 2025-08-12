@@ -22,6 +22,7 @@ import {
 	Globe,
 	Info,
 	MessageSquare,
+	Mic,
 	LucideIcon,
 } from "lucide-react"
 
@@ -62,6 +63,7 @@ import { ContextManagementSettings } from "./ContextManagementSettings"
 import { TerminalSettings } from "./TerminalSettings"
 import { ExperimentalSettings } from "./ExperimentalSettings"
 import { LanguageSettings } from "./LanguageSettings"
+import { VoiceSettings } from "./VoiceSettings"
 import { About } from "./About"
 import { Section } from "./Section"
 import PromptsSettings from "./PromptsSettings"
@@ -89,6 +91,7 @@ const sectionNames = [
 	"prompts",
 	"experimental",
 	"language",
+	"voice",
 	"about",
 ] as const
 

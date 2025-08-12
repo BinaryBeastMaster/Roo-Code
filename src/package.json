@@ -173,8 +173,7 @@
 			{
 				"command": "roo-cline.acceptInput",
 				"title": "%command.acceptInput.title%",
-				"category": "%configuration.title%"
-			}
+			},
 		],
 		"menus": {
 			"editor/context": [
