@@ -2604,6 +2604,66 @@ export const webviewMessageHandler = async (
 			break
 		}
 
+		case "sttStart": {
+			try {
+				const vw = (provider as any).view?.webview
+				if (vw) {
+					await provider.sttStart(vw, {
+						sampleRate: message.sttSampleRate ?? 16000,
+						encoding: message.sttEncoding ?? "pcm16",
+						language: message.sttLanguage,
+					})
+				}
+			} catch (error) {
+				provider.log(`Error in sttStart: ${error instanceof Error ? error.message : String(error)}`)
+				await provider.postMessageToWebview({
+					type: "voiceState",
+					voice: { error: "stt_start_failed", isRecording: false, isStreaming: false },
+				})
+			}
+			break
+		}
+		case "sttChunk": {
+			try {
+				const vw = (provider as any).view?.webview
+				if (vw && message.sttData) {
+					provider.sttChunk(vw, message.sttData)
+				}
+			} catch (error) {
+				provider.log(`Error in sttChunk: ${error instanceof Error ? error.message : String(error)}`)
+			}
+			break
+		}
+		case "sttStop": {
+			try {
+				const vw = (provider as any).view?.webview
+				if (vw) {
+					provider.sttStop(vw)
+				}
+			} catch (error) {
+				provider.log(`Error in sttStop: ${error instanceof Error ? error.message : String(error)}`)
+			}
+			break
+		}
+		case "voiceEnsureSpeechExtension": {
+			try {
+				const installed = await provider.ensureVsCodeSpeechInstalled()
+				await provider.postMessageToWebview({
+					type: "voiceState",
+					voice: { speechExtensionInstalled: installed === true },
+				})
+			} catch (error) {
+				provider.log(
+					`Error ensuring VS Code Speech extension: ${error instanceof Error ? error.message : String(error)}`,
+				)
+				await provider.postMessageToWebview({
+					type: "voiceState",
+					voice: { speechExtensionInstalled: false, error: "speech_extension_install_failed" },
+				})
+			}
+			break
+		}
+
 		case "insertTextIntoTextarea": {
 			const text = message.text
 			if (text) {
