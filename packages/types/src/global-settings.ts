@@ -79,6 +79,7 @@ export const globalSettingsSchema = z.object({
 	autoCondenseContext: z.boolean().optional(),
 	autoCondenseContextPercent: z.number().optional(),
 	maxConcurrentFileReads: z.number().optional(),
+	voiceEnabled: z.boolean().optional(),
 
 	/**
 	 * Whether to include diagnostic messages (errors, warnings) in tool outputs

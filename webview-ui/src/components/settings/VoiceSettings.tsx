@@ -5,19 +5,24 @@ import type { ProviderSettings } from "@roo-code/types"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { cn } from "@src/lib/utils"
-import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeTextField, VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 
 import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
+import { SetCachedStateField } from "./types"
 
 type VoiceSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	apiConfiguration: ProviderSettings
 	setApiConfigurationField: (field: keyof ProviderSettings, value: ProviderSettings[keyof ProviderSettings]) => void
+	voiceEnabled?: boolean
+	setCachedStateField: SetCachedStateField<"voiceEnabled">
 }
 
 export const VoiceSettings = ({
 	apiConfiguration,
 	setApiConfigurationField,
+	voiceEnabled,
+	setCachedStateField,
 	className,
 	...props
 }: VoiceSettingsProps) => {
@@ -42,18 +47,33 @@ export const VoiceSettings = ({
 
 			<Section>
 				<div>
-					<label className="block font-medium mb-1">API Key</label>
-					<VSCodeTextField
-						value={(apiConfiguration as any)?.voiceApiKey || ""}
-						type="password"
-						onInput={handleInput("voiceApiKey")}
-						placeholder={t("settings:placeholders.apiKey")}
-						className="w-full"
-					/>
-					<div className="text-[12px] opacity-70 mt-1">
-						Used for OpenAI Realtime Whisper transcription. Save to enable the mic.
+					<VSCodeCheckbox
+						checked={!!voiceEnabled}
+						onChange={(e: any) => setCachedStateField("voiceEnabled", !!e.target.checked)}>
+						<span className="font-medium">Enable voice input</span>
+					</VSCodeCheckbox>
+					<div className="text-vscode-descriptionForeground text-sm mt-1">
+						Turn on a built-in mic-to-text flow powered by your configured STT backend.
 					</div>
 				</div>
+
+				{voiceEnabled && (
+					<div className="flex flex-col gap-3 pl-3 border-l-2 border-vscode-button-background">
+						<div>
+							<label className="block font-medium mb-1">API Key</label>
+							<VSCodeTextField
+								value={(apiConfiguration as any)?.voiceApiKey || ""}
+								type="password"
+								onInput={handleInput("voiceApiKey")}
+								placeholder={t("settings:placeholders.apiKey")}
+								className="w-full"
+							/>
+							<div className="text-[12px] opacity-70 mt-1">
+								Used for OpenAI Realtime Whisper transcription. Save to enable the mic.
+							</div>
+						</div>
+					</div>
+				)}
 			</Section>
 		</div>
 	)

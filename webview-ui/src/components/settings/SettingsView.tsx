@@ -185,6 +185,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		includeDiagnosticMessages,
 		maxDiagnosticMessages,
 		includeTaskHistoryInEnhance,
+		voiceEnabled,
 	} = cachedState
 
 	const apiConfiguration = useMemo(() => cachedState.apiConfiguration ?? {}, [cachedState.apiConfiguration])
@@ -228,12 +229,11 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 				}
 
 				const previousValue = prevState.apiConfiguration?.[field]
-
-				// Don't treat initial sync from undefined to a defined value as a user change
-				// This prevents the dirty state when the component initializes and auto-syncs the model ID
 				const isInitialSync = previousValue === undefined && value !== undefined
 
-				if (!isInitialSync) {
+				if (field === "voiceApiKey") {
+					setChangeDetected(true)
+				} else if (!isInitialSync) {
 					setChangeDetected(true)
 				}
 				return { ...prevState, apiConfiguration: { ...prevState.apiConfiguration, [field]: value } }
@@ -302,6 +302,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			vscode.postMessage({ type: "ttsEnabled", bool: ttsEnabled })
 			vscode.postMessage({ type: "ttsSpeed", value: ttsSpeed })
 			vscode.postMessage({ type: "soundVolume", value: soundVolume })
+			vscode.postMessage({ type: "voiceEnabled", bool: voiceEnabled ?? false })
 			vscode.postMessage({ type: "diffEnabled", bool: diffEnabled })
 			vscode.postMessage({ type: "enableCheckpoints", bool: enableCheckpoints })
 			vscode.postMessage({ type: "browserViewportSize", text: browserViewportSize })
@@ -729,6 +730,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								<VoiceSettings
 									apiConfiguration={apiConfiguration as ProviderSettings}
 									setApiConfigurationField={setApiConfigurationField}
+									voiceEnabled={!!voiceEnabled}
+									setCachedStateField={setCachedStateField}
 								/>
 							</Section>
 						</>

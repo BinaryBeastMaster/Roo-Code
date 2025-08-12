@@ -325,6 +325,10 @@ export const webviewMessageHandler = async (
 			await updateGlobalState("alwaysAllowMcp", message.bool)
 			await provider.postStateToWebview()
 			break
+		case "voiceEnabled":
+			await updateGlobalState("voiceEnabled", message.bool ?? undefined)
+			await provider.postStateToWebview()
+			break
 		case "alwaysAllowModeSwitch":
 			await updateGlobalState("alwaysAllowModeSwitch", message.bool)
 			await provider.postStateToWebview()
