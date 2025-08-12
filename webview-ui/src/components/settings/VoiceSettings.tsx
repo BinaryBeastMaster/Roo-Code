@@ -73,27 +73,14 @@ export const VoiceSettings = ({
 								</VSCodeOption>
 							</VSCodeDropdown>
 							<div className="text-[12px] opacity-70 mt-1">
-								“VS Code Speech” is a mic capture helper; the STT provider actually does the
-								transcription.
+								Mic capture runs automatically. “VS Code Speech” is a mic-capture helper; the STT
+								provider below performs the transcription.
 							</div>
 						</div>
 
-						<div>
-							<label className="block font-medium mb-1">Mic capture method</label>
-							<VSCodeDropdown
-								value={(apiConfiguration as any)?.voiceMicCaptureMethod || "built-in"}
-								onChange={(e: any) => setApiConfigurationField("voiceMicCaptureMethod", e.target.value)}
-								className="w-full">
-								<VSCodeOption value="built-in" className="p-2">
-									Built-in (webview)
-								</VSCodeOption>
-								<VSCodeOption value="vscode-speech" className="p-2">
-									VS Code Speech extension
-								</VSCodeOption>
-							</VSCodeDropdown>
-							<div className="text-[12px] opacity-70 mt-1">
-								If built-in capture is blocked, you’ll be prompted to install “VS Code Speech”.
-							</div>
+						<div className="text-[12px] opacity-70">
+							Mic capture is automatic: the chat webview tries built‑in capture first; if blocked, you’ll
+							be prompted to install “VS Code Speech”. The STT Provider handles the transcription.
 						</div>
 
 						<div>
