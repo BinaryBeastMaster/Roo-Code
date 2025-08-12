@@ -47,7 +47,11 @@
 	],
 	"activationEvents": [
 		"onLanguage",
-		"onStartupFinished"
+		"onStartupFinished",
+		"onView:roo-cline.SidebarProvider",
+		"onCommand:roo-cline.focusPanel",
+		"onCommand:roo-cline.newTask",
+		"onCommand:roo-cline.settingsButtonClicked"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
@@ -173,6 +177,11 @@
 			{
 				"command": "roo-cline.acceptInput",
 				"title": "%command.acceptInput.title%"
+			},
+			{
+				"command": "roo-cline.focusPanel",
+				"title": "%command.focusPanel.title%",
+				"category": "%configuration.title%"
 			}
 		],
 		"menus": {

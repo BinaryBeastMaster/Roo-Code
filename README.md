@@ -162,14 +162,17 @@ If pressing F5 opens an Extension Development Host window but Roo‑Code is not 
         - `pnpm approve-builds` (press “a” to select all, then Enter)
         - `pnpm -w install`
     - Then F5 again.
-4. In the Dev Host, run “Roo: Focus Panel” (or “Roo: New Task”) to activate the extension.
+4. Activate Roo‑Code in the Dev Host:
+    - Command Palette → run “Roo: Focus Panel” (activates via command)
+    - Or open the Roo view from the Activity Bar (activates via view)
+    - Confirm “Roo Code (Development)” is listed in the Extensions panel
 5. If it still doesn’t appear, install the VSIX inside the Dev Host:
     - Extensions → “…” → Install from VSIX… → pick the file from `bin/roo-cline-<version>.vsix`
     - Then try “Roo: Focus Panel” again.
 
 Logs to check:
 
-- View → Output → “Roo Code”
+- View → Output → “Roo Code” (look for “extension activated”)
 - Command Palette → “Developer: Toggle Developer Tools” → Console (Extension Host)
 - In the Roo chat webview: “Developer: Open Webview Developer Tools” → Console
 
