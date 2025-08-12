@@ -149,6 +149,30 @@ Press `F5` (or go to **Run** → **Start Debugging**) in VSCode. This will open 
 - Changes to the webview will appear immediately.
 - Changes to the core extension will also hot reload automatically.
 
+### Troubleshooting F5: Dev Host opens without Roo‑Code
+
+If pressing F5 opens an Extension Development Host window but Roo‑Code is not loaded:
+
+1. Make sure you opened the repo root as the workspace (File → Open Folder… → Roo‑Code).
+2. Use the “Run and Debug” panel and pick “Run Extension” (the Roo‑Code config). It uses:
+    - args: `--extensionDevelopmentPath=${workspaceFolder}/src`
+    - default build task: “watch” (builds webview and extension bundle)
+3. Approve builds on first install (Windows often requires this):
+    - In a terminal at the repo root, run:
+        - `pnpm approve-builds` (press “a” to select all, then Enter)
+        - `pnpm -w install`
+    - Then F5 again.
+4. In the Dev Host, run “Roo: Focus Panel” (or “Roo: New Task”) to activate the extension.
+5. If it still doesn’t appear, install the VSIX inside the Dev Host:
+    - Extensions → “…” → Install from VSIX… → pick the file from `bin/roo-cline-<version>.vsix`
+    - Then try “Roo: Focus Panel” again.
+
+Logs to check:
+
+- View → Output → “Roo Code”
+- Command Palette → “Developer: Toggle Developer Tools” → Console (Extension Host)
+- In the Roo chat webview: “Developer: Open Webview Developer Tools” → Console
+
 ### Automated VSIX Installation
 
 To build and install the extension as a VSIX package directly into VSCode:
