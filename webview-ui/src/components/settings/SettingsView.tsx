@@ -231,7 +231,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 				const previousValue = prevState.apiConfiguration?.[field]
 				const isInitialSync = previousValue === undefined && value !== undefined
 
-				if (field === "voiceApiKey") {
+				if (field === "voiceApiKey" || field === "voiceSttProvider") {
 					setChangeDetected(true)
 				} else if (!isInitialSync) {
 					setChangeDetected(true)

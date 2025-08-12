@@ -1800,6 +1800,7 @@ export class ClineProvider
 			maxDiagnosticMessages,
 			includeTaskHistoryInEnhance,
 			remoteControlEnabled,
+			voiceEnabled,
 		} = await this.getState()
 
 		const telemetryKey = process.env.POSTHOG_API_KEY
@@ -1928,6 +1929,7 @@ export class ClineProvider
 			maxDiagnosticMessages: maxDiagnosticMessages ?? 50,
 			includeTaskHistoryInEnhance: includeTaskHistoryInEnhance ?? false,
 			remoteControlEnabled: remoteControlEnabled ?? false,
+			voiceEnabled: voiceEnabled ?? false,
 		}
 	}
 
@@ -2057,6 +2059,8 @@ export class ClineProvider
 			terminalZshOhMy: stateValues.terminalZshOhMy ?? false,
 			terminalZshP10k: stateValues.terminalZshP10k ?? false,
 			terminalZdotdir: stateValues.terminalZdotdir ?? false,
+			voiceEnabled: stateValues.voiceEnabled ?? false,
+
 			terminalCompressProgressBar: stateValues.terminalCompressProgressBar ?? true,
 			mode: stateValues.mode ?? defaultModeSlug,
 			language: stateValues.language ?? formatLanguage(vscode.env.language),

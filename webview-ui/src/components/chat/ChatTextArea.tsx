@@ -960,6 +960,10 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				setIsTtsPlaying(true)
 			} else if (message.type === "ttsStop") {
 				setIsTtsPlaying(false)
+			} else if (message.type === "voiceState") {
+				if (message.voice?.speechExtensionInstalled) {
+					setSpeechExtensionInstalled(true)
+				}
 			}
 		})
 
