@@ -213,6 +213,8 @@ export interface WebviewMessage {
 		| "sttStart"
 		| "sttChunk"
 		| "sttStop"
+		| "voiceEnsureSpeechExtension"
+		| "voiceState"
 		| "insertTextIntoTextarea"
 	text?: string
 	editedMessageContent?: string
@@ -241,6 +243,8 @@ export interface WebviewMessage {
 	slug?: string
 	modeConfig?: ModeConfig
 	timeout?: number
+	voice?: { speechExtensionInstalled?: boolean }
+
 	sttSampleRate?: number
 	sttEncoding?: "pcm16"
 	sttData?: ArrayBuffer | number[] | Uint8Array

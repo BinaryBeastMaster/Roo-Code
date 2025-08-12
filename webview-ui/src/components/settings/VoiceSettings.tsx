@@ -15,37 +15,45 @@ type VoiceSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	setApiConfigurationField: (field: keyof ProviderSettings, value: ProviderSettings[keyof ProviderSettings]) => void
 }
 
-export const VoiceSettings = ({ apiConfiguration, setApiConfigurationField, className, ...props }: VoiceSettingsProps) => {
+export const VoiceSettings = ({
+	apiConfiguration,
+	setApiConfigurationField,
+	className,
+	...props
+}: VoiceSettingsProps) => {
 	const { t } = useAppTranslation()
 
 	const handleInput = useCallback(
-		(field: keyof ProviderSettings) =>
-			(e: Event | any) => {
-				const value = (e.target as HTMLInputElement).value
-				setApiConfigurationField(field, value)
-			},
+		(field: keyof ProviderSettings) => (e: Event | any) => {
+			const value = (e.target as HTMLInputElement).value
+			setApiConfigurationField(field, value)
+		},
 		[setApiConfigurationField],
 	)
 
 	return (
 		<div className={cn("flex flex-col gap-2", className)} {...props}>
-			<SectionHeader description={t("settings:providers.apiKeyStorageNotice")}>
+			<SectionHeader description="Enable voice input in chat using a speech‑to‑text backend. VS Code may prompt you to install “VS Code Speech” to enable microphone capture in this webview. API keys are stored securely in VS Code Secret Storage.">
 				<div className="flex items-center gap-2">
 					<Mic className="w-4" />
-					<div>{t("settings:sections.voice")}</div>
+					<div>Voice (Experimental)</div>
 				</div>
 			</SectionHeader>
 
 			<Section>
-				<VSCodeTextField
-					value={apiConfiguration?.voiceApiKey || ""}
-					type="password"
-					onInput={handleInput("voiceApiKey")}
-					placeholder={t("settings:placeholders.apiKey")}
-					className="w-full"
-				>
-					<label className="block font-medium mb-1">{t("settings:providers.apiKey")}</label>
-				</VSCodeTextField>
+				<div>
+					<label className="block font-medium mb-1">API Key</label>
+					<VSCodeTextField
+						value={(apiConfiguration as any)?.voiceApiKey || ""}
+						type="password"
+						onInput={handleInput("voiceApiKey")}
+						placeholder={t("settings:placeholders.apiKey")}
+						className="w-full"
+					/>
+					<div className="text-[12px] opacity-70 mt-1">
+						Used for OpenAI Realtime Whisper transcription. Save to enable the mic.
+					</div>
+				</div>
 			</Section>
 		</div>
 	)

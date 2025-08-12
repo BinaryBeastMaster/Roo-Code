@@ -201,6 +201,7 @@ export interface ExtensionMessage {
 		isStreaming?: boolean
 		silenceCountdownMs?: number
 		error?: string
+		speechExtensionInstalled?: boolean
 	}
 }
 

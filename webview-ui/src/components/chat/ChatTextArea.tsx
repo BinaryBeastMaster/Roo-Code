@@ -117,11 +117,12 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			document.addEventListener("mousedown", handleClickOutside)
 			return () => document.removeEventListener("mousedown", handleClickOutside)
 		}, [showDropdown])
+		const [speechExtensionInstalled, setSpeechExtensionInstalled] = useState(false)
 
 		// Handle enhanced prompt response and search results.
 		useEffect(() => {
 			const messageHandler = (event: MessageEvent) => {
-				const message = event.data
+				const message: any = event.data
 
 				if (message.type === "enhancedPrompt") {
 					if (message.text && textAreaRef.current) {
@@ -192,6 +193,11 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					if (message.requestId === searchRequestId) {
 						setFileSearchResults(message.results || [])
 					}
+				} else if (message.type === "voiceState") {
+					if (message.voice?.speechExtensionInstalled) {
+						pendingSpeechInstallRef.current = false
+						setSpeechExtensionInstalled(true)
+					}
 				}
 			}
 
@@ -252,8 +258,9 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			source?: MediaStreamAudioSourceNode
 			processor?: ScriptProcessorNode
 		} | null>(null)
+		const pendingSpeechInstallRef = useRef(false)
 		const startMic = useCallback(async () => {
-			try {
+			async function startCapture() {
 				const stream = await navigator.mediaDevices.getUserMedia({
 					audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
 				})
@@ -277,8 +284,16 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				const message: WebviewMessage = { type: "sttStart", sttSampleRate: 16000, sttEncoding: "pcm16" }
 				vscode.postMessage(message)
 				setIsRecording(true)
+			}
+			try {
+				await startCapture()
 			} catch (_e) {
 				setIsRecording(false)
+				if (!pendingSpeechInstallRef.current) {
+					pendingSpeechInstallRef.current = true
+					const ensureMsg: WebviewMessage = { type: "voiceEnsureSpeechExtension" }
+					vscode.postMessage(ensureMsg)
+				}
 			}
 		}, [])
 		const stopMic = useCallback(() => {
@@ -301,6 +316,13 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		}, [isRecording, startMic, stopMic])
 
 		const allModes = useMemo(() => getAllModes(customModes), [customModes])
+
+		useEffect(() => {
+			if (speechExtensionInstalled && !isRecording) {
+				startMic()
+				setSpeechExtensionInstalled(false)
+			}
+		}, [speechExtensionInstalled, isRecording, startMic])
 
 		const queryItems = useMemo(() => {
 			return [
@@ -1073,7 +1095,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								: "border border-transparent",
 						isEditMode ? "pt-1.5 pb-10 px-2" : "py-1.5 px-2",
 						"px-[8px]",
-						"pr-9",
+						"pr-[56px]",
 						"z-10",
 						"forced-color-adjust-none",
 					)}
@@ -1137,7 +1159,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						"resize-none",
 						"overflow-x-hidden",
 						"overflow-y-auto",
-						"pr-9",
+						"pr-[56px]",
 						"flex-none flex-grow",
 						"z-[2]",
 						"scrollbar-none",

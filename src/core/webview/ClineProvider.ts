@@ -1018,6 +1018,11 @@ export class ClineProvider
 	 */
 	private setWebviewMessageListener(webview: vscode.Webview) {
 		const onReceiveMessage = async (message: WebviewMessage) => {
+			if (message.type === "voiceEnsureSpeechExtension") {
+				const ok = await this.ensureVsCodeSpeechInstalled()
+				await this.postMessageToWebview({ type: "voiceState", voice: { speechExtensionInstalled: !!ok } })
+				return
+			}
 			if (message.type === "sttStart") {
 				await this.sttStart(webview, {
 					sampleRate: message.sttSampleRate!,
@@ -1635,6 +1640,36 @@ export class ClineProvider
 	 */
 	private mergeDeniedCommands(globalStateCommands?: string[]): string[] {
 		return this.mergeCommandLists("deniedCommands", "denied", globalStateCommands)
+	}
+
+	public async ensureVsCodeSpeechInstalled(): Promise<boolean> {
+		const id = "ms-vscode.vscode-speech"
+		const existing = vscode.extensions.getExtension(id)
+		if (existing) return true
+		const action = await vscode.window.showInformationMessage(
+			"Roo Code can prompt to install the 'VS Code Speech' extension to enable microphone capture in the chat panel.",
+			"Install Extension",
+			"Cancel",
+		)
+		if (action !== "Install Extension") return false
+		try {
+			await vscode.commands.executeCommand("workbench.extensions.installExtension", id)
+			const ext = vscode.extensions.getExtension(id)
+			if (!ext) return false
+			if (ext.activate) {
+				try {
+					await ext.activate()
+				} catch {}
+			}
+			return true
+		} catch {
+			try {
+				await vscode.env.openExternal(
+					vscode.Uri.parse("https://marketplace.visualstudio.com/items?itemName=ms-vscode.vscode-speech"),
+				)
+			} catch {}
+			return false
+		}
 	}
 
 	/**
@@ -2376,6 +2411,7 @@ export class ClineProvider
 			// Send initial status for the current workspace
 			this.postMessageToWebview({
 				type: "indexingStatusUpdate",
+
 				values: currentManager.getCurrentStatus(),
 			})
 		}
