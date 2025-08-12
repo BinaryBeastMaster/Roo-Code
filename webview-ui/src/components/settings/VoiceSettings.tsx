@@ -5,7 +5,7 @@ import type { ProviderSettings } from "@roo-code/types"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { cn } from "@src/lib/utils"
-import { VSCodeTextField, VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeTextField, VSCodeCheckbox, VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
 
 import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
@@ -59,6 +59,43 @@ export const VoiceSettings = ({
 
 				{voiceEnabled && (
 					<div className="flex flex-col gap-3 pl-3 border-l-2 border-vscode-button-background">
+						<div>
+							<label className="block font-medium mb-1">STT Provider</label>
+							<VSCodeDropdown
+								value={(apiConfiguration as any)?.voiceSttProvider || "openai-realtime"}
+								onChange={(e: any) => setApiConfigurationField("voiceSttProvider", e.target.value)}
+								className="w-full">
+								<VSCodeOption value="openai-realtime" className="p-2">
+									OpenAI Realtime (Transcription)
+								</VSCodeOption>
+								<VSCodeOption value="local" className="p-2" disabled>
+									Local (coming soon)
+								</VSCodeOption>
+							</VSCodeDropdown>
+							<div className="text-[12px] opacity-70 mt-1">
+								“VS Code Speech” is a mic capture helper; the STT provider actually does the
+								transcription.
+							</div>
+						</div>
+
+						<div>
+							<label className="block font-medium mb-1">Mic capture method</label>
+							<VSCodeDropdown
+								value={(apiConfiguration as any)?.voiceMicCaptureMethod || "built-in"}
+								onChange={(e: any) => setApiConfigurationField("voiceMicCaptureMethod", e.target.value)}
+								className="w-full">
+								<VSCodeOption value="built-in" className="p-2">
+									Built-in (webview)
+								</VSCodeOption>
+								<VSCodeOption value="vscode-speech" className="p-2">
+									VS Code Speech extension
+								</VSCodeOption>
+							</VSCodeDropdown>
+							<div className="text-[12px] opacity-70 mt-1">
+								If built-in capture is blocked, you’ll be prompted to install “VS Code Speech”.
+							</div>
+						</div>
+
 						<div>
 							<label className="block font-medium mb-1">API Key</label>
 							<VSCodeTextField

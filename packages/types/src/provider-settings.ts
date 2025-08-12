@@ -284,6 +284,8 @@ const ioIntelligenceSchema = apiModelIdProviderModelSchema.extend({
 
 const voiceSchema = z.object({
 	voiceApiKey: z.string().optional(),
+	voiceSttProvider: z.enum(["openai-realtime", "local"]).optional(),
+	voiceMicCaptureMethod: z.enum(["built-in", "vscode-speech"]).optional(),
 })
 
 const defaultSchema = z.object({
