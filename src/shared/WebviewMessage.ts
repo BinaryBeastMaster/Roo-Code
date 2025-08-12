@@ -210,6 +210,9 @@ export interface WebviewMessage {
 		| "openCommandFile"
 		| "deleteCommand"
 		| "createCommand"
+		| "sttStart"
+		| "sttChunk"
+		| "sttStop"
 		| "insertTextIntoTextarea"
 	text?: string
 	editedMessageContent?: string
@@ -238,6 +241,11 @@ export interface WebviewMessage {
 	slug?: string
 	modeConfig?: ModeConfig
 	timeout?: number
+	sttSampleRate?: number
+	sttEncoding?: "pcm16"
+	sttData?: ArrayBuffer | number[] | Uint8Array
+	sttLanguage?: string
+	insertMode?: "interim" | "final"
 	payload?: WebViewMessagePayload
 	source?: "global" | "project"
 	requestId?: string

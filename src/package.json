@@ -172,8 +172,8 @@
 			},
 			{
 				"command": "roo-cline.acceptInput",
-				"title": "%command.acceptInput.title%",
-			},
+				"title": "%command.acceptInput.title%"
+			}
 		],
 		"menus": {
 			"editor/context": [

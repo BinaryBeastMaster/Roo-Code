@@ -26,7 +26,7 @@ import ModeSelector from "./ModeSelector"
 import { ApiConfigSelector } from "./ApiConfigSelector"
 import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
 import ContextMenu from "./ContextMenu"
-import { VolumeX, Image, WandSparkles, SendHorizontal } from "lucide-react"
+import { VolumeX, Image, WandSparkles, SendHorizontal, Mic } from "lucide-react"
 import { IndexingStatusBadge } from "./IndexingStatusBadge"
 import { SlashCommandsPopover } from "./SlashCommandsPopover"
 import { cn } from "@/lib/utils"
@@ -244,6 +244,23 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				setInputValue(t("chat:enhancePromptDescription"))
 			}
 		}, [inputValue, setInputValue, t])
+		const [isRecording, setIsRecording] = useState(false)
+		const handleToggleMic = useCallback(() => {
+			if (!isRecording) {
+				setIsRecording(true)
+				const message: WebviewMessage = {
+					type: "sttStart",
+					sttSampleRate: 16000,
+					sttEncoding: "pcm16",
+				}
+				vscode.postMessage(message)
+			} else {
+				setIsRecording(false)
+				const stopMsg: WebviewMessage = { type: "sttStop" }
+				vscode.postMessage(stopMsg)
+			}
+		}, [isRecording])
+
 
 		const allModes = useMemo(() => getAllModes(customModes), [customModes])
 
@@ -1114,7 +1131,27 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				</div>
 
 				{!isEditMode && (
-					<div className="absolute bottom-1 right-1 z-30">
+					<div className="absolute bottom-1 right-1 z-30 flex gap-1">
+						<StandardTooltip content={isRecording ? t("chat:stopRecording") : t("chat:startRecording")}>
+							<button
+								type="button"
+								aria-label={isRecording ? t("chat:stopRecording") : t("chat:startRecording")}
+								onClick={handleToggleMic}
+								className={cn(
+									"relative inline-flex items-center justify-center",
+									"bg-transparent border-none p-1.5",
+									"rounded-md min-w-[28px] min-h-[28px]",
+									"opacity-60 hover:opacity-100 text-vscode-descriptionForeground hover:text-vscode-foreground",
+									"transition-all duration-150",
+									"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
+									"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+									"active:bg-[rgba(255,255,255,0.1)]",
+									"cursor-pointer",
+									isRecording && "text-red-500",
+								)}>
+								<Mic className="w-4 h-4" />
+							</button>
+						</StandardTooltip>
 						<StandardTooltip content={t("chat:sendMessage")}>
 							<button
 								aria-label={t("chat:sendMessage")}

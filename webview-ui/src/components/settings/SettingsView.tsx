@@ -721,7 +721,15 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 					{/* Experimental Section */}
 					{activeTab === "experimental" && (
-						<ExperimentalSettings setExperimentEnabled={setExperimentEnabled} experiments={experiments} />
+						<>
+							<ExperimentalSettings setExperimentEnabled={setExperimentEnabled} experiments={experiments} />
+							<Section>
+								<VoiceSettings
+									apiConfiguration={apiConfiguration as ProviderSettings}
+									setApiConfigurationField={setApiConfigurationField}
+								/>
+							</Section>
+						</>
 					)}
 
 					{/* Language Section */}
