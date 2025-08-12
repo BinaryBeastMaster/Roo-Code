@@ -26,7 +26,7 @@ import ModeSelector from "./ModeSelector"
 import { ApiConfigSelector } from "./ApiConfigSelector"
 import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
 import ContextMenu from "./ContextMenu"
-import { VolumeX, Image, WandSparkles, SendHorizontal } from "lucide-react"
+import { VolumeX, Image, WandSparkles, SendHorizontal, Mic } from "lucide-react"
 import { IndexingStatusBadge } from "./IndexingStatusBadge"
 import { SlashCommandsPopover } from "./SlashCommandsPopover"
 import { cn } from "@/lib/utils"
@@ -117,11 +117,12 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			document.addEventListener("mousedown", handleClickOutside)
 			return () => document.removeEventListener("mousedown", handleClickOutside)
 		}, [showDropdown])
+		const [speechExtensionInstalled, setSpeechExtensionInstalled] = useState(false)
 
 		// Handle enhanced prompt response and search results.
 		useEffect(() => {
 			const messageHandler = (event: MessageEvent) => {
-				const message = event.data
+				const message: any = event.data
 
 				if (message.type === "enhancedPrompt") {
 					if (message.text && textAreaRef.current) {
@@ -181,6 +182,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						type: ContextMenuOptionType.Git,
 						value: commit.hash,
 						label: commit.subject,
+
 						description: `${commit.shortHash} by ${commit.author} on ${commit.date}`,
 						icon: "$(git-commit)",
 					}))
@@ -190,6 +192,11 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					setSearchLoading(false)
 					if (message.requestId === searchRequestId) {
 						setFileSearchResults(message.results || [])
+					}
+				} else if (message.type === "voiceState") {
+					if (message.voice?.speechExtensionInstalled) {
+						pendingSpeechInstallRef.current = false
+						setSpeechExtensionInstalled(true)
 					}
 				}
 			}
@@ -244,8 +251,78 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				setInputValue(t("chat:enhancePromptDescription"))
 			}
 		}, [inputValue, setInputValue, t])
+		const [isRecording, setIsRecording] = useState(false)
+		const audioRefs = useRef<{
+			stream?: MediaStream
+			ctx?: AudioContext
+			source?: MediaStreamAudioSourceNode
+			processor?: ScriptProcessorNode
+		} | null>(null)
+		const pendingSpeechInstallRef = useRef(false)
+		const startMic = useCallback(async () => {
+			async function startCapture() {
+				const stream = await navigator.mediaDevices.getUserMedia({
+					audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+				})
+				const ctx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 })
+				const source = ctx.createMediaStreamSource(stream)
+				const processor = ctx.createScriptProcessor(4096, 1, 1)
+				processor.onaudioprocess = (e) => {
+					const input = e.inputBuffer.getChannelData(0)
+					const pcm16 = new Int16Array(input.length)
+					for (let i = 0; i < input.length; i++) {
+						const s = Math.max(-1, Math.min(1, input[i]))
+						pcm16[i] = s < 0 ? s * 0x8000 : s * 0x7fff
+					}
+					const u8 = new Uint8Array(pcm16.buffer)
+					const message: WebviewMessage = { type: "sttChunk", sttData: u8 }
+					vscode.postMessage(message)
+				}
+				source.connect(processor)
+				processor.connect(ctx.destination)
+				audioRefs.current = { stream, ctx, source, processor }
+				const message: WebviewMessage = { type: "sttStart", sttSampleRate: 16000, sttEncoding: "pcm16" }
+				vscode.postMessage(message)
+				setIsRecording(true)
+			}
+			try {
+				await startCapture()
+			} catch (_e) {
+				setIsRecording(false)
+				if (!pendingSpeechInstallRef.current) {
+					pendingSpeechInstallRef.current = true
+					const ensureMsg: WebviewMessage = { type: "voiceEnsureSpeechExtension" }
+					vscode.postMessage(ensureMsg)
+				}
+			}
+		}, [])
+		const stopMic = useCallback(() => {
+			const refs = audioRefs.current
+			if (refs?.processor) refs.processor.disconnect()
+			if (refs?.source) refs.source.disconnect()
+			if (refs?.ctx && refs.ctx.state !== "closed") refs.ctx.close()
+			if (refs?.stream) refs.stream.getTracks().forEach((t) => t.stop())
+			audioRefs.current = null
+			setIsRecording(false)
+			const stopMsg: WebviewMessage = { type: "sttStop" }
+			vscode.postMessage(stopMsg)
+		}, [])
+		const handleToggleMic = useCallback(() => {
+			if (!isRecording) {
+				startMic()
+			} else {
+				stopMic()
+			}
+		}, [isRecording, startMic, stopMic])
 
 		const allModes = useMemo(() => getAllModes(customModes), [customModes])
+
+		useEffect(() => {
+			if (speechExtensionInstalled && !isRecording) {
+				startMic()
+				setSpeechExtensionInstalled(false)
+			}
+		}, [speechExtensionInstalled, isRecording, startMic])
 
 		const queryItems = useMemo(() => {
 			return [
@@ -883,6 +960,10 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				setIsTtsPlaying(true)
 			} else if (message.type === "ttsStop") {
 				setIsTtsPlaying(false)
+			} else if (message.type === "voiceState") {
+				if (message.voice?.speechExtensionInstalled) {
+					setSpeechExtensionInstalled(true)
+				}
 			}
 		})
 
@@ -1018,7 +1099,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								: "border border-transparent",
 						isEditMode ? "pt-1.5 pb-10 px-2" : "py-1.5 px-2",
 						"px-[8px]",
-						"pr-9",
+						"pr-[56px]",
 						"z-10",
 						"forced-color-adjust-none",
 					)}
@@ -1082,7 +1163,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						"resize-none",
 						"overflow-x-hidden",
 						"overflow-y-auto",
-						"pr-9",
+						"pr-[56px]",
 						"flex-none flex-grow",
 						"z-[2]",
 						"scrollbar-none",
@@ -1114,7 +1195,27 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				</div>
 
 				{!isEditMode && (
-					<div className="absolute bottom-1 right-1 z-30">
+					<div className="absolute bottom-1 right-1 z-30 flex gap-1">
+						<StandardTooltip content={isRecording ? t("chat:stopRecording") : t("chat:startRecording")}>
+							<button
+								type="button"
+								aria-label={isRecording ? t("chat:stopRecording") : t("chat:startRecording")}
+								onClick={handleToggleMic}
+								className={cn(
+									"relative inline-flex items-center justify-center",
+									"bg-transparent border-none p-1.5",
+									"rounded-md min-w-[28px] min-h-[28px]",
+									"opacity-60 hover:opacity-100 text-vscode-descriptionForeground hover:text-vscode-foreground",
+									"transition-all duration-150",
+									"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
+									"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+									"active:bg-[rgba(255,255,255,0.1)]",
+									"cursor-pointer",
+									isRecording && "text-red-500",
+								)}>
+								<Mic className="w-4 h-4" />
+							</button>
+						</StandardTooltip>
 						<StandardTooltip content={t("chat:sendMessage")}>
 							<button
 								aria-label={t("chat:sendMessage")}

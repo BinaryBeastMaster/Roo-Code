@@ -58,7 +58,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	extensionContext = context
 	outputChannel = vscode.window.createOutputChannel(Package.outputChannel)
 	context.subscriptions.push(outputChannel)
-	outputChannel.appendLine(`${Package.name} extension activated - ${JSON.stringify(Package)}`)
+	outputChannel.appendLine(`${Package.name} extension activated`)
 
 	// Migrate old settings to new
 	await migrateSettings(context, outputChannel)

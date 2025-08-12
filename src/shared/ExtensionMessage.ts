@@ -118,6 +118,7 @@ export interface ExtensionMessage {
 		| "codeIndexSettingsSaved"
 		| "codeIndexSecretStatus"
 		| "showDeleteMessageDialog"
+		| "voiceState"
 		| "showEditMessageDialog"
 		| "commands"
 		| "insertTextIntoTextarea"
@@ -195,6 +196,13 @@ export interface ExtensionMessage {
 	messageTs?: number
 	context?: string
 	commands?: Command[]
+	voice?: {
+		isRecording?: boolean
+		isStreaming?: boolean
+		silenceCountdownMs?: number
+		error?: string
+		speechExtensionInstalled?: boolean
+	}
 }
 
 export type ExtensionState = Pick<
@@ -234,6 +242,7 @@ export type ExtensionState = Pick<
 	| "ttsSpeed"
 	| "soundEnabled"
 	| "soundVolume"
+	| "voiceEnabled"
 	// | "maxOpenTabsContext" // Optional in GlobalSettings, required here.
 	// | "maxWorkspaceFiles" // Optional in GlobalSettings, required here.
 	// | "showRooIgnoredFiles" // Optional in GlobalSettings, required here.

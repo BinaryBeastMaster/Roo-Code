@@ -79,6 +79,7 @@ export const globalSettingsSchema = z.object({
 	autoCondenseContext: z.boolean().optional(),
 	autoCondenseContextPercent: z.number().optional(),
 	maxConcurrentFileReads: z.number().optional(),
+	voiceEnabled: z.boolean().optional(),
 
 	/**
 	 * Whether to include diagnostic messages (errors, warnings) in tool outputs
@@ -202,6 +203,7 @@ export const SECRET_STATE_KEYS = [
 	"sambaNovaApiKey",
 	"fireworksApiKey",
 	"ioIntelligenceApiKey",
+	"voiceApiKey",
 ] as const satisfies readonly (keyof ProviderSettings)[]
 export type SecretState = Pick<ProviderSettings, (typeof SECRET_STATE_KEYS)[number]>
 
