@@ -43,24 +43,25 @@ export function getPromptComponent(
 }
 
 async function generatePrompt(
-	context: vscode.ExtensionContext,
-	cwd: string,
-	supportsComputerUse: boolean,
-	mode: Mode,
-	mcpHub?: McpHub,
-	diffStrategy?: DiffStrategy,
-	browserViewportSize?: string,
-	promptComponent?: PromptComponent,
-	customModeConfigs?: ModeConfig[],
-	globalCustomInstructions?: string,
-	diffEnabled?: boolean,
-	experiments?: Record<string, boolean>,
-	enableMcpServerCreation?: boolean,
-	language?: string,
-	rooIgnoreInstructions?: string,
-	partialReadsEnabled?: boolean,
-	settings?: SystemPromptSettings,
-	todoList?: TodoItem[],
+        context: vscode.ExtensionContext,
+        cwd: string,
+        supportsComputerUse: boolean,
+        mode: Mode,
+        mcpHub?: McpHub,
+        diffStrategy?: DiffStrategy,
+        browserViewportSize?: string,
+        promptComponent?: PromptComponent,
+        customModeConfigs?: ModeConfig[],
+        globalCustomInstructions?: string,
+        diffEnabled?: boolean,
+        experiments?: Record<string, boolean>,
+        enableMcpServerCreation?: boolean,
+        language?: string,
+        rooIgnoreInstructions?: string,
+        partialReadsEnabled?: boolean,
+        settings?: SystemPromptSettings,
+        todoList?: TodoItem[],
+        condensed?: boolean,
 ): Promise<string> {
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
@@ -87,26 +88,28 @@ async function generatePrompt(
 
 	const codeIndexManager = CodeIndexManager.getInstance(context, cwd)
 
-	const basePrompt = `${roleDefinition}
+        const basePrompt = `${roleDefinition}
 
 ${markdownFormattingSection()}
 
-${getSharedToolUseSection()}
+${condensed ? "" : getSharedToolUseSection()}
 
-${getToolDescriptionsForMode(
-	mode,
-	cwd,
-	supportsComputerUse,
-	codeIndexManager,
-	effectiveDiffStrategy,
-	browserViewportSize,
-	shouldIncludeMcp ? mcpHub : undefined,
-	customModeConfigs,
-	experiments,
-	partialReadsEnabled,
-	settings,
-	enableMcpServerCreation,
-)}
+${condensed
+                ? ""
+                : getToolDescriptionsForMode(
+                                mode,
+                                cwd,
+                                supportsComputerUse,
+                                codeIndexManager,
+                                effectiveDiffStrategy,
+                                browserViewportSize,
+                                shouldIncludeMcp ? mcpHub : undefined,
+                                customModeConfigs,
+                                experiments,
+                                partialReadsEnabled,
+                                settings,
+                                enableMcpServerCreation,
+                        )}
 
 ${getToolUseGuidelinesSection(codeIndexManager)}
 
@@ -123,33 +126,34 @@ ${getSystemInfoSection(cwd)}
 ${getObjectiveSection(codeIndexManager, experiments)}
 
 ${await addCustomInstructions(baseInstructions, globalCustomInstructions || "", cwd, mode, {
-	language: language ?? formatLanguage(vscode.env.language),
-	rooIgnoreInstructions,
-	settings,
+        language: language ?? formatLanguage(vscode.env.language),
+        rooIgnoreInstructions,
+        settings,
 })}`
 
 	return basePrompt
 }
 
 export const SYSTEM_PROMPT = async (
-	context: vscode.ExtensionContext,
-	cwd: string,
-	supportsComputerUse: boolean,
-	mcpHub?: McpHub,
-	diffStrategy?: DiffStrategy,
-	browserViewportSize?: string,
-	mode: Mode = defaultModeSlug,
-	customModePrompts?: CustomModePrompts,
-	customModes?: ModeConfig[],
-	globalCustomInstructions?: string,
-	diffEnabled?: boolean,
-	experiments?: Record<string, boolean>,
-	enableMcpServerCreation?: boolean,
-	language?: string,
-	rooIgnoreInstructions?: string,
-	partialReadsEnabled?: boolean,
-	settings?: SystemPromptSettings,
-	todoList?: TodoItem[],
+        context: vscode.ExtensionContext,
+        cwd: string,
+        supportsComputerUse: boolean,
+        mcpHub?: McpHub,
+        diffStrategy?: DiffStrategy,
+        browserViewportSize?: string,
+        mode: Mode = defaultModeSlug,
+        customModePrompts?: CustomModePrompts,
+        customModes?: ModeConfig[],
+        globalCustomInstructions?: string,
+        diffEnabled?: boolean,
+        experiments?: Record<string, boolean>,
+        enableMcpServerCreation?: boolean,
+        language?: string,
+        rooIgnoreInstructions?: string,
+        partialReadsEnabled?: boolean,
+        settings?: SystemPromptSettings,
+        todoList?: TodoItem[],
+        condensed?: boolean,
 ): Promise<string> => {
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
@@ -202,24 +206,25 @@ ${customInstructions}`
 	// If diff is disabled, don't pass the diffStrategy
 	const effectiveDiffStrategy = diffEnabled ? diffStrategy : undefined
 
-	return generatePrompt(
-		context,
-		cwd,
-		supportsComputerUse,
-		currentMode.slug,
-		mcpHub,
-		effectiveDiffStrategy,
-		browserViewportSize,
-		promptComponent,
-		customModes,
-		globalCustomInstructions,
-		diffEnabled,
-		experiments,
-		enableMcpServerCreation,
-		language,
-		rooIgnoreInstructions,
-		partialReadsEnabled,
-		settings,
-		todoList,
-	)
+        return generatePrompt(
+                context,
+                cwd,
+                supportsComputerUse,
+                currentMode.slug,
+                mcpHub,
+                effectiveDiffStrategy,
+                browserViewportSize,
+                promptComponent,
+                customModes,
+                globalCustomInstructions,
+                diffEnabled,
+                experiments,
+                enableMcpServerCreation,
+                language,
+                rooIgnoreInstructions,
+                partialReadsEnabled,
+                settings,
+                todoList,
+                condensed,
+        )
 }

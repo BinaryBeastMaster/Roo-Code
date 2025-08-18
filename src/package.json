@@ -392,16 +392,21 @@
 					"default": true,
 					"description": "%settings.useAgentRules.description%"
 				},
-				"roo-cline.apiRequestTimeout": {
-					"type": "number",
-					"default": 600,
-					"minimum": 0,
-					"maximum": 3600,
-					"description": "%settings.apiRequestTimeout.description%"
-				}
-			}
-		}
-	},
+                                "roo-cline.apiRequestTimeout": {
+                                        "type": "number",
+                                        "default": 600,
+                                        "minimum": 0,
+                                        "maximum": 3600,
+                                        "description": "%settings.apiRequestTimeout.description%"
+                                },
+                                "roo-cline.enablePromptPreprocessor": {
+                                        "type": "boolean",
+                                        "default": false,
+                                        "description": "%settings.enablePromptPreprocessor.description%"
+                                }
+                        }
+                }
+        },
 	"scripts": {
 		"lint": "eslint . --ext=ts --max-warnings=0",
 		"check-types": "tsc --noEmit",

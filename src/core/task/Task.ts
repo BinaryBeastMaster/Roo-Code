@@ -2204,12 +2204,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				throw new Error("Provider not available")
 			}
 
-			return SYSTEM_PROMPT(
-				provider.context,
-				this.cwd,
-				(this.api.getModel().info.supportsComputerUse ?? false) && (browserToolEnabled ?? true),
-				mcpHub,
-				this.diffStrategy,
+                        const useCondensed = experiments?.[EXPERIMENT_IDS.PROMPT_PREPROCESSOR] ?? false
+                        return SYSTEM_PROMPT(
+                                provider.context,
+                                this.cwd,
+                                (this.api.getModel().info.supportsComputerUse ?? false) && (browserToolEnabled ?? true),
+                                mcpHub,
+                                this.diffStrategy,
 				browserViewportSize,
 				mode,
 				customModePrompts,
@@ -2221,28 +2222,31 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				language,
 				rooIgnoreInstructions,
 				maxReadFileLine !== -1,
-				{
-					maxConcurrentFileReads: maxConcurrentFileReads ?? 5,
-					todoListEnabled: apiConfiguration?.todoListEnabled ?? true,
-					useAgentRules: vscode.workspace.getConfiguration("roo-cline").get<boolean>("useAgentRules") ?? true,
-				},
-			)
-		})()
-	}
+                                {
+                                        maxConcurrentFileReads: maxConcurrentFileReads ?? 5,
+                                        todoListEnabled: apiConfiguration?.todoListEnabled ?? true,
+                                        useAgentRules: vscode.workspace.getConfiguration("roo-cline").get<boolean>("useAgentRules") ?? true,
+                                },
+                                undefined,
+                                useCondensed,
+                        )
+                })()
+        }
 
 	public async *attemptApiRequest(retryAttempt: number = 0): ApiStream {
 		const state = await this.providerRef.deref()?.getState()
 
-		const {
-			apiConfiguration,
-			autoApprovalEnabled,
-			alwaysApproveResubmit,
-			requestDelaySeconds,
-			mode,
-			autoCondenseContext = true,
-			autoCondenseContextPercent = 100,
-			profileThresholds = {},
-		} = state ?? {}
+                const {
+                        apiConfiguration,
+                        autoApprovalEnabled,
+                        alwaysApproveResubmit,
+                        requestDelaySeconds,
+                        mode,
+                        autoCondenseContext = true,
+                        autoCondenseContextPercent = 100,
+                        profileThresholds = {},
+                        experiments,
+                } = state ?? {}
 
 		// Get condensing configuration for automatic triggers.
 		const customCondensingPrompt = state?.customCondensingPrompt
@@ -2393,13 +2397,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// non-fatal
 		}
 
-		const metadata: ApiHandlerCreateMessageMetadata = {
-			mode: mode,
-			taskId: this.taskId,
-			...(previousResponseId ? { previousResponseId } : {}),
-			// If a condense just occurred, explicitly suppress continuity fallback for the next call
-			...(this.skipPrevResponseIdOnce ? { suppressPreviousResponseId: true } : {}),
-		}
+                const useCondensed = experiments?.[EXPERIMENT_IDS.PROMPT_PREPROCESSOR] ?? false
+                const metadata: ApiHandlerCreateMessageMetadata = {
+                        mode: mode,
+                        taskId: this.taskId,
+                        ...(previousResponseId ? { previousResponseId } : {}),
+                        // If a condense just occurred, explicitly suppress continuity fallback for the next call
+                        ...(this.skipPrevResponseIdOnce ? { suppressPreviousResponseId: true } : {}),
+                        ...(useCondensed ? { useCondensedPrompt: true } : {}),
+                }
 
 		// Reset skip flag after applying (it only affects the immediate next call)
 		if (this.skipPrevResponseIdOnce) {

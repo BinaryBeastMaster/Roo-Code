@@ -77,18 +77,18 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 				const lastUserMsgIndex = userMsgIndices[userMsgIndices.length - 1] ?? -1
 				const secondLastMsgUserIndex = userMsgIndices[userMsgIndices.length - 2] ?? -1
 
-				stream = await this.client.messages.create(
-					{
-						model: modelId,
-						max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
-						temperature,
-						thinking,
-						// Setting cache breakpoint for system prompt so new tasks can reuse it.
-						system: [{ text: systemPrompt, type: "text", cache_control: cacheControl }],
-						messages: messages.map((message, index) => {
-							if (index === lastUserMsgIndex || index === secondLastMsgUserIndex) {
-								return {
-									...message,
+                                stream = await this.client.messages.create(
+                                        {
+                                                model: modelId,
+                                                max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
+                                                temperature,
+                                                thinking,
+                                                // Setting cache breakpoint for system prompt so new tasks can reuse it.
+                                                system: [{ text: systemPromptToUse, type: "text", cache_control: cacheControl }],
+                                                messages: messages.map((message, index) => {
+                                                        if (index === lastUserMsgIndex || index === secondLastMsgUserIndex) {
+                                                                return {
+                                                                        ...message,
 									content:
 										typeof message.content === "string"
 											? [{ type: "text", text: message.content, cache_control: cacheControl }]
@@ -128,15 +128,15 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 				break
 			}
 			default: {
-				stream = (await this.client.messages.create({
-					model: modelId,
-					max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
-					temperature,
-					system: [{ text: systemPrompt, type: "text" }],
-					messages,
-					stream: true,
-				})) as any
-				break
+                                stream = (await this.client.messages.create({
+                                        model: modelId,
+                                        max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
+                                        temperature,
+                                        system: [{ text: systemPromptToUse, type: "text" }],
+                                        messages,
+                                        stream: true,
+                                })) as any
+                                break
 			}
 		}
 

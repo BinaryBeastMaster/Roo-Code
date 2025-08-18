@@ -24,33 +24,36 @@ describe("experiments", () => {
 	})
 
 	describe("isEnabled", () => {
-		it("returns false when POWER_STEERING experiment is not enabled", () => {
-			const experiments: Record<ExperimentId, boolean> = {
-				powerSteering: false,
-				multiFileApplyDiff: false,
-				preventFocusDisruption: false,
-				assistantMessageParser: false,
-			}
+                it("returns false when POWER_STEERING experiment is not enabled", () => {
+                        const experiments: Record<ExperimentId, boolean> = {
+                                powerSteering: false,
+                                multiFileApplyDiff: false,
+                                preventFocusDisruption: false,
+                                assistantMessageParser: false,
+                                promptPreprocessor: false,
+                        }
 			expect(Experiments.isEnabled(experiments, EXPERIMENT_IDS.POWER_STEERING)).toBe(false)
 		})
 
-		it("returns true when experiment POWER_STEERING is enabled", () => {
-			const experiments: Record<ExperimentId, boolean> = {
-				powerSteering: true,
-				multiFileApplyDiff: false,
-				preventFocusDisruption: false,
-				assistantMessageParser: false,
-			}
+                it("returns true when experiment POWER_STEERING is enabled", () => {
+                        const experiments: Record<ExperimentId, boolean> = {
+                                powerSteering: true,
+                                multiFileApplyDiff: false,
+                                preventFocusDisruption: false,
+                                assistantMessageParser: false,
+                                promptPreprocessor: false,
+                        }
 			expect(Experiments.isEnabled(experiments, EXPERIMENT_IDS.POWER_STEERING)).toBe(true)
 		})
 
-		it("returns false when experiment is not present", () => {
-			const experiments: Record<ExperimentId, boolean> = {
-				powerSteering: false,
-				multiFileApplyDiff: false,
-				preventFocusDisruption: false,
-				assistantMessageParser: false,
-			}
+                it("returns false when experiment is not present", () => {
+                        const experiments: Record<ExperimentId, boolean> = {
+                                powerSteering: false,
+                                multiFileApplyDiff: false,
+                                preventFocusDisruption: false,
+                                assistantMessageParser: false,
+                                promptPreprocessor: false,
+                        }
 			expect(Experiments.isEnabled(experiments, EXPERIMENT_IDS.POWER_STEERING)).toBe(false)
 		})
 	})

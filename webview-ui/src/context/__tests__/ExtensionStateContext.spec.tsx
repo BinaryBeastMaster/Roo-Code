@@ -222,16 +222,17 @@ describe("mergeExtensionState", () => {
 		const newState: ExtensionState = {
 			...baseState,
 			apiConfiguration: { modelMaxThinkingTokens: 456, modelTemperature: 0.3 },
-			experiments: {
-				powerSteering: true,
-				marketplace: false,
-				disableCompletionCommand: false,
-				concurrentFileReads: true,
-				multiFileApplyDiff: true,
-				preventFocusDisruption: false,
-				assistantMessageParser: false,
-			} as Record<ExperimentId, boolean>,
-		}
+                        experiments: {
+                                powerSteering: true,
+                                marketplace: false,
+                                disableCompletionCommand: false,
+                                concurrentFileReads: true,
+                                multiFileApplyDiff: true,
+                                preventFocusDisruption: false,
+                                assistantMessageParser: false,
+                                promptPreprocessor: false,
+                        } as Record<ExperimentId, boolean>,
+                }
 
 		const result = mergeExtensionState(prevState, newState)
 
@@ -240,14 +241,15 @@ describe("mergeExtensionState", () => {
 			modelTemperature: 0.3,
 		})
 
-		expect(result.experiments).toEqual({
-			powerSteering: true,
-			marketplace: false,
-			disableCompletionCommand: false,
-			concurrentFileReads: true,
-			multiFileApplyDiff: true,
-			preventFocusDisruption: false,
-			assistantMessageParser: false,
-		})
+                expect(result.experiments).toEqual({
+                        powerSteering: true,
+                        marketplace: false,
+                        disableCompletionCommand: false,
+                        concurrentFileReads: true,
+                        multiFileApplyDiff: true,
+                        preventFocusDisruption: false,
+                        assistantMessageParser: false,
+                        promptPreprocessor: false,
+                })
 	})
 })

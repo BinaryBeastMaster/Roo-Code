@@ -97,12 +97,13 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		}
 	}
 
-	override async *createMessage(
-		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
-		metadata?: ApiHandlerCreateMessageMetadata,
-	): ApiStream {
-		const model = this.getModel()
+        override async *createMessage(
+                systemPrompt: string,
+                messages: Anthropic.Messages.MessageParam[],
+                metadata?: ApiHandlerCreateMessageMetadata,
+        ): ApiStream {
+                const model = this.getModel()
+                const systemPromptToUse = metadata?.useCondensedPrompt ? systemPrompt : systemPrompt
 		let id: "o3-mini" | "o3" | "o4-mini" | undefined
 
 		if (model.id.startsWith("o3-mini")) {
@@ -114,15 +115,15 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		}
 
 		if (id) {
-			yield* this.handleReasonerMessage(model, id, systemPrompt, messages)
+                        yield* this.handleReasonerMessage(model, id, systemPromptToUse, messages)
 		} else if (model.id.startsWith("o1")) {
-			yield* this.handleO1FamilyMessage(model, systemPrompt, messages)
+                        yield* this.handleO1FamilyMessage(model, systemPromptToUse, messages)
 		} else if (this.isResponsesApiModel(model.id)) {
 			// Both GPT-5 and Codex Mini use the v1/responses endpoint
-			yield* this.handleResponsesApiMessage(model, systemPrompt, messages, metadata)
+                        yield* this.handleResponsesApiMessage(model, systemPromptToUse, messages, metadata)
 		} else {
-			yield* this.handleDefaultModelMessage(model, systemPrompt, messages)
-		}
+                        yield* this.handleDefaultModelMessage(model, systemPromptToUse, messages)
+        }
 	}
 
 	private async *handleO1FamilyMessage(
