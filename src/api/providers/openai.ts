@@ -78,13 +78,14 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		}
 	}
 
-	override async *createMessage(
-		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
-		metadata?: ApiHandlerCreateMessageMetadata,
-	): ApiStream {
-		const { info: modelInfo, reasoning } = this.getModel()
-		const modelUrl = this.options.openAiBaseUrl ?? ""
+        override async *createMessage(
+                systemPrompt: string,
+                messages: Anthropic.Messages.MessageParam[],
+                metadata?: ApiHandlerCreateMessageMetadata,
+        ): ApiStream {
+                const systemPromptToUse = metadata?.useCondensedPrompt ? systemPrompt : systemPrompt
+                const { info: modelInfo, reasoning } = this.getModel()
+                const modelUrl = this.options.openAiBaseUrl ?? ""
 		const modelId = this.options.openAiModelId ?? ""
 		const enabledR1Format = this.options.openAiR1FormatEnabled ?? false
 		const enabledLegacyFormat = this.options.openAiLegacyFormat ?? false
@@ -93,38 +94,38 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const ark = modelUrl.includes(".volces.com")
 
 		if (modelId.includes("o1") || modelId.includes("o3") || modelId.includes("o4")) {
-			yield* this.handleO3FamilyMessage(modelId, systemPrompt, messages)
-			return
-		}
+                        yield* this.handleO3FamilyMessage(modelId, systemPromptToUse, messages)
+                        return
+                }
 
 		if (this.options.openAiStreamingEnabled ?? true) {
-			let systemMessage: OpenAI.Chat.ChatCompletionSystemMessageParam = {
-				role: "system",
-				content: systemPrompt,
-			}
+                        let systemMessage: OpenAI.Chat.ChatCompletionSystemMessageParam = {
+                                role: "system",
+                                content: systemPromptToUse,
+                        }
 
 			let convertedMessages
 
-			if (deepseekReasoner) {
-				convertedMessages = convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
-			} else if (ark || enabledLegacyFormat) {
-				convertedMessages = [systemMessage, ...convertToSimpleMessages(messages)]
-			} else {
-				if (modelInfo.supportsPromptCache) {
-					systemMessage = {
-						role: "system",
-						content: [
-							{
-								type: "text",
-								text: systemPrompt,
-								// @ts-ignore-next-line
-								cache_control: { type: "ephemeral" },
-							},
-						],
-					}
-				}
+                                if (deepseekReasoner) {
+                                        convertedMessages = convertToR1Format([{ role: "user", content: systemPromptToUse }, ...messages])
+                                } else if (ark || enabledLegacyFormat) {
+                                        convertedMessages = [systemMessage, ...convertToSimpleMessages(messages)]
+                                } else {
+                                if (modelInfo.supportsPromptCache) {
+                                        systemMessage = {
+                                                role: "system",
+                                                content: [
+                                                        {
+                                                                type: "text",
+                                                                text: systemPromptToUse,
+                                                                // @ts-ignore-next-line
+                                                                cache_control: { type: "ephemeral" },
+                                                        },
+                                                ],
+                                        }
+                                }
 
-				convertedMessages = [systemMessage, ...convertToOpenAiMessages(messages)]
+                                convertedMessages = [systemMessage, ...convertToOpenAiMessages(messages)]
 
 				if (modelInfo.supportsPromptCache) {
 					// Note: the following logic is copied from openrouter:
@@ -212,18 +213,18 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			}
 		} else {
 			// o1 for instance doesnt support streaming, non-1 temp, or system prompt
-			const systemMessage: OpenAI.Chat.ChatCompletionUserMessageParam = {
-				role: "user",
-				content: systemPrompt,
-			}
+                        const systemMessage: OpenAI.Chat.ChatCompletionUserMessageParam = {
+                                role: "user",
+                                content: systemPromptToUse,
+                        }
 
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
-				model: modelId,
-				messages: deepseekReasoner
-					? convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
-					: enabledLegacyFormat
-						? [systemMessage, ...convertToSimpleMessages(messages)]
-						: [systemMessage, ...convertToOpenAiMessages(messages)],
+                                model: modelId,
+                                messages: deepseekReasoner
+                                        ? convertToR1Format([{ role: "user", content: systemPromptToUse }, ...messages])
+                                        : enabledLegacyFormat
+                                                ? [systemMessage, ...convertToSimpleMessages(messages)]
+                                                : [systemMessage, ...convertToOpenAiMessages(messages)],
 			}
 
 			// Add max_tokens if needed

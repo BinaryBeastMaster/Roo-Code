@@ -1,10 +1,11 @@
 import type { AssertEqual, Equals, Keys, Values, ExperimentId, Experiments } from "@roo-code/types"
 
 export const EXPERIMENT_IDS = {
-	MULTI_FILE_APPLY_DIFF: "multiFileApplyDiff",
-	POWER_STEERING: "powerSteering",
-	PREVENT_FOCUS_DISRUPTION: "preventFocusDisruption",
-	ASSISTANT_MESSAGE_PARSER: "assistantMessageParser",
+        MULTI_FILE_APPLY_DIFF: "multiFileApplyDiff",
+        POWER_STEERING: "powerSteering",
+        PREVENT_FOCUS_DISRUPTION: "preventFocusDisruption",
+        ASSISTANT_MESSAGE_PARSER: "assistantMessageParser",
+        PROMPT_PREPROCESSOR: "promptPreprocessor",
 } as const satisfies Record<string, ExperimentId>
 
 type _AssertExperimentIds = AssertEqual<Equals<ExperimentId, Values<typeof EXPERIMENT_IDS>>>
@@ -16,10 +17,11 @@ interface ExperimentConfig {
 }
 
 export const experimentConfigsMap: Record<ExperimentKey, ExperimentConfig> = {
-	MULTI_FILE_APPLY_DIFF: { enabled: false },
-	POWER_STEERING: { enabled: false },
-	PREVENT_FOCUS_DISRUPTION: { enabled: false },
-	ASSISTANT_MESSAGE_PARSER: { enabled: false },
+        MULTI_FILE_APPLY_DIFF: { enabled: false },
+        POWER_STEERING: { enabled: false },
+        PREVENT_FOCUS_DISRUPTION: { enabled: false },
+        ASSISTANT_MESSAGE_PARSER: { enabled: false },
+        PROMPT_PREPROCESSOR: { enabled: false },
 }
 
 export const experimentDefault = Object.fromEntries(

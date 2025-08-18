@@ -80,13 +80,15 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 		enableMcpServerCreation,
 		language,
 		rooIgnoreInstructions,
-		maxReadFileLine !== -1,
-		{
-			maxConcurrentFileReads: maxConcurrentFileReads ?? 5,
-			todoListEnabled: apiConfiguration?.todoListEnabled ?? true,
-			useAgentRules: vscode.workspace.getConfiguration("roo-cline").get<boolean>("useAgentRules") ?? true,
-		},
-	)
+                maxReadFileLine !== -1,
+                {
+                        maxConcurrentFileReads: maxConcurrentFileReads ?? 5,
+                        todoListEnabled: apiConfiguration?.todoListEnabled ?? true,
+                        useAgentRules: vscode.workspace.getConfiguration("roo-cline").get<boolean>("useAgentRules") ?? true,
+                },
+                undefined,
+                undefined,
+        )
 
 	return systemPrompt
 }

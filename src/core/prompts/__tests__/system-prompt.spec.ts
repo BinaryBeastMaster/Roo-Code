@@ -638,7 +638,7 @@ describe("SYSTEM_PROMPT", () => {
 		expect(prompt).toContain("## update_todo_list")
 	})
 
-	it("should include update_todo_list tool when todoListEnabled is undefined", async () => {
+        it("should include update_todo_list tool when todoListEnabled is undefined", async () => {
 		const settings = {
 			maxConcurrentFileReads: 5,
 			todoListEnabled: true,
@@ -665,9 +665,10 @@ describe("SYSTEM_PROMPT", () => {
 			settings, // settings
 		)
 
-		expect(prompt).toContain("update_todo_list")
-		expect(prompt).toContain("## update_todo_list")
-	})
+                expect(prompt).toContain("update_todo_list")
+                expect(prompt).toContain("## update_todo_list")
+        })
+
 
 	afterAll(() => {
 		vi.restoreAllMocks()
