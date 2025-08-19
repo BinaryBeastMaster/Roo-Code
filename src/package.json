@@ -65,7 +65,8 @@
 				{
 					"type": "webview",
 					"id": "roo-cline.SidebarProvider",
-					"name": "%views.sidebar.name%"
+					"name": "%views.sidebar.name%",
+					"icon": "assets/icons/icon.svg"
 				}
 			]
 		},
@@ -398,6 +399,43 @@
 					"minimum": 0,
 					"maximum": 3600,
 					"description": "%settings.apiRequestTimeout.description%"
+				},
+				"roo-cline.enablePromptPreprocessor": {
+					"type": "boolean",
+					"default": false,
+					"description": "Enable the Prompt Preprocessor (routes to condensed BIG prompts when applicable)."
+				},
+				"roo-cline.condensedPromptEnabled": {
+					"type": "boolean",
+					"default": true,
+					"description": "Allow condensed prompts when the Prompt Preprocessor is enabled."
+				},
+				"roo-cline.preprocessorProvider": {
+					"type": "string",
+					"enum": [
+						"openai"
+					],
+					"default": "openai",
+					"description": "Provider for the Prompt Preprocessor (extensible; OpenAI supported initially)."
+				},
+				"roo-cline.preprocessorModelId": {
+					"type": "string",
+					"default": "gpt-4o-mini",
+					"description": "Model ID for the Prompt Preprocessor (free‑form; user enters exact model name)."
+				},
+				"roo-cline.preprocessorTemperature": {
+					"type": "number",
+					"default": 0.2,
+					"minimum": 0,
+					"maximum": 2,
+					"description": "Sampling temperature for the Prompt Preprocessor."
+				},
+				"roo-cline.preprocessorMaxContextChars": {
+					"type": "number",
+					"default": 2000,
+					"minimum": 200,
+					"maximum": 10000,
+					"description": "Maximum characters from recent context to pass to the Prompt Preprocessor."
 				}
 			}
 		}

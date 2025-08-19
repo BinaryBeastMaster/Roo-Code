@@ -2225,6 +2225,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					maxConcurrentFileReads: maxConcurrentFileReads ?? 5,
 					todoListEnabled: apiConfiguration?.todoListEnabled ?? true,
 					useAgentRules: vscode.workspace.getConfiguration("roo-cline").get<boolean>("useAgentRules") ?? true,
+					condensed:
+						(vscode.workspace.getConfiguration("roo-cline").get<boolean>("enablePromptPreprocessor") ??
+							false) &&
+						(vscode.workspace.getConfiguration("roo-cline").get<boolean>("condensedPromptEnabled") ?? true),
 				},
 			)
 		})()
@@ -2399,6 +2403,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			...(previousResponseId ? { previousResponseId } : {}),
 			// If a condense just occurred, explicitly suppress continuity fallback for the next call
 			...(this.skipPrevResponseIdOnce ? { suppressPreviousResponseId: true } : {}),
+			// Hint to providers (no-op where unsupported) that this turn uses a condensed prompt
+			...((vscode.workspace.getConfiguration("roo-cline").get<boolean>("enablePromptPreprocessor") ?? false) &&
+			(vscode.workspace.getConfiguration("roo-cline").get<boolean>("condensedPromptEnabled") ?? true)
+				? { useCondensedPrompt: true }
+				: {}),
 		}
 
 		// Reset skip flag after applying (it only affects the immediate next call)

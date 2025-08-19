@@ -52,6 +52,11 @@ export interface ApiHandlerCreateMessageMetadata {
 	 * Used to enforce "skip once" after a condense operation.
 	 */
 	suppressPreviousResponseId?: boolean
+	/**
+	 * Optional hint: this turn is using a condensed system prompt (tool catalogs omitted).
+	 * Providers may use this to adjust caching/formatting behavior where applicable.
+	 */
+	useCondensedPrompt?: boolean
 }
 
 export interface ApiHandler {

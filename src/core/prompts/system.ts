@@ -87,28 +87,44 @@ async function generatePrompt(
 
 	const codeIndexManager = CodeIndexManager.getInstance(context, cwd)
 
+	const isCondensed = settings?.condensed === true
+
+	const toolUseSection = isCondensed ? "" : `${getSharedToolUseSection()}\n\n`
+
+	const toolsSection = isCondensed
+		? ""
+		: `${getToolDescriptionsForMode(
+				mode,
+				cwd,
+				supportsComputerUse,
+				codeIndexManager,
+				effectiveDiffStrategy,
+				browserViewportSize,
+				shouldIncludeMcp ? mcpHub : undefined,
+				customModeConfigs,
+				experiments,
+				partialReadsEnabled,
+				settings,
+				enableMcpServerCreation,
+			)}\n\n`
+
+	const customInstructionsFinal = await addCustomInstructions(
+		baseInstructions,
+		globalCustomInstructions || "",
+		cwd,
+		mode,
+		{
+			language: language ?? formatLanguage(vscode.env.language),
+			rooIgnoreInstructions,
+			settings,
+		},
+	)
+
 	const basePrompt = `${roleDefinition}
 
 ${markdownFormattingSection()}
 
-${getSharedToolUseSection()}
-
-${getToolDescriptionsForMode(
-	mode,
-	cwd,
-	supportsComputerUse,
-	codeIndexManager,
-	effectiveDiffStrategy,
-	browserViewportSize,
-	shouldIncludeMcp ? mcpHub : undefined,
-	customModeConfigs,
-	experiments,
-	partialReadsEnabled,
-	settings,
-	enableMcpServerCreation,
-)}
-
-${getToolUseGuidelinesSection(codeIndexManager)}
+${toolUseSection}${toolsSection}${getToolUseGuidelinesSection(codeIndexManager)}
 
 ${mcpServersSection}
 
@@ -122,11 +138,7 @@ ${getSystemInfoSection(cwd)}
 
 ${getObjectiveSection(codeIndexManager, experiments)}
 
-${await addCustomInstructions(baseInstructions, globalCustomInstructions || "", cwd, mode, {
-	language: language ?? formatLanguage(vscode.env.language),
-	rooIgnoreInstructions,
-	settings,
-})}`
+${customInstructionsFinal}`
 
 	return basePrompt
 }
